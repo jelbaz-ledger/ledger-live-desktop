@@ -13,7 +13,6 @@ import TransportNodeHidSingleton from "@ledgerhq/hw-transport-node-hid-singleton
 import BluetoothTransport from "@ledgerhq/hw-transport-node-ble";
 import TransportHttp from "@ledgerhq/hw-transport-http";
 import { DisconnectedDevice } from "@ledgerhq/errors";
-import { log } from "@ledgerhq/logs";
 import noble from "@abandonware/noble";
 
 /* eslint-disable guard-for-in */
@@ -64,7 +63,9 @@ if (getEnv("DEVICE_PROXY_URL")) {
     open: peripheral => {
       const bluetoothPeripheral = noble._peripherals[peripheral?.id];
       if (!bluetoothPeripheral) return false;
-      return BluetoothTransport.open(noble._peripherals[peripheral.id]);
+      return retry(() => BluetoothTransport.open(noble._peripherals[peripheral.id]), {
+        maxRetry: 4,
+      });
     },
     disconnect: id => BluetoothTransport.disconnect(id),
   });
