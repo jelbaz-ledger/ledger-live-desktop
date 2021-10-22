@@ -51,7 +51,6 @@
     "@ledgerhq/hw-transport-http": "6.7.0",
     "@ledgerhq/hw-transport-node-ble": "^6.10.0",
     "@ledgerhq/hw-transport-node-hid-singleton": "6.7.0",
-    "@ledgerhq/hw-transport-web-ble": "^6.11.0",
     "@ledgerhq/ledger-core": "6.13.0",
     "@ledgerhq/live-common": "^21.8.2",
     "@ledgerhq/logs": "6.2.0",

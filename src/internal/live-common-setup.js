@@ -14,6 +14,7 @@ import BluetoothTransport from "@ledgerhq/hw-transport-node-ble";
 import TransportHttp from "@ledgerhq/hw-transport-http";
 import { DisconnectedDevice } from "@ledgerhq/errors";
 import { log } from "@ledgerhq/logs";
+import noble from "@abandonware/noble";
 
 /* eslint-disable guard-for-in */
 for (const k in process.env) {
@@ -49,7 +50,6 @@ setErrorRemapping(e => {
   return throwError(e);
 });
 
-log("INIT");
 if (getEnv("DEVICE_PROXY_URL")) {
   const Tr = TransportHttp(getEnv("DEVICE_PROXY_URL").split("|"));
 
@@ -59,16 +59,17 @@ if (getEnv("DEVICE_PROXY_URL")) {
     disconnect: () => Promise.resolve(),
   });
 } else {
-  registerTransportModule({
-    id: "hid",
-    open: devicePath => retry(() => TransportNodeHidSingleton.open(), { maxRetry: 4 }),
-    disconnect: () => Promise.resolve(),
-  });
+  // registerTransportModule({
+  //   id: "hid",
+  //   open: devicePath => {
+  //     return retry(() => TransportNodeHidSingleton.open(), { maxRetry: 4 });
+  //   },
+  //   disconnect: () => Promise.resolve(),
+  // });
   registerTransportModule({
     id: "ble",
-    open: id => {
-      log("ble transport open()");
-      return BluetoothTransport.open(id);
+    open: peripheral => {
+      return BluetoothTransport.open(noble._peripherals[peripheral.uuid]);
     },
     disconnect: id => BluetoothTransport.disconnect(id),
   });

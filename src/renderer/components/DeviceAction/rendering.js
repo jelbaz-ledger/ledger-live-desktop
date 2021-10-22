@@ -49,9 +49,6 @@ import { getProviderIcon } from "~/renderer/screens/exchange/Swap2/utils";
 import CryptoCurrencyIcon from "~/renderer/components/CryptoCurrencyIcon";
 import { SWAP_VERSION } from "~/renderer/screens/exchange/Swap2/utils/index";
 import { context } from "~/renderer/drawers/Provider";
-import TransportBLE from "@ledgerhq/hw-transport-web-ble";
-import { Observable } from "rxjs";
-import { addDevice, removeDevice } from "~/renderer/actions/devices";
 
 const AnimationWrapper: ThemedComponent<{ modelId?: DeviceModelId }> = styled.div`
   width: 600px;
@@ -481,7 +478,6 @@ export const renderConnectYourDevice = ({
   onRepairModal,
   device,
   unresponsive,
-  dispatch,
 }: {
   modelId: DeviceModelId,
   type: "light" | "dark",
@@ -489,81 +485,34 @@ export const renderConnectYourDevice = ({
   onRepairModal: () => void,
   device: ?Device,
   unresponsive?: boolean,
-  dispatch: any,
-}) => {
-  return (
-    <Wrapper>
-      <Header />
-      <AnimationWrapper modelId={modelId}>
-        <Animation
-          animation={getDeviceAnimation(
-            modelId,
-            type,
-            unresponsive ? "enterPinCode" : "plugAndPinCode",
-          )}
+}) => (
+  <Wrapper>
+    <Header />
+    <AnimationWrapper modelId={modelId}>
+      <Animation
+        animation={getDeviceAnimation(
+          modelId,
+          type,
+          unresponsive ? "enterPinCode" : "plugAndPinCode",
+        )}
+      />
+    </AnimationWrapper>
+    <Footer>
+      <Title>
+        <Trans
+          i18nKey={
+            unresponsive ? "DeviceAction.unlockDevice" : "DeviceAction.connectAndUnlockDevice"
+          }
         />
-      </AnimationWrapper>
-      <Footer>
-        <Title>
-          <Trans
-            i18nKey={
-              unresponsive ? "DeviceAction.unlockDevice" : "DeviceAction.connectAndUnlockDevice"
-            }
-          />
-        </Title>
-        {!device ? (
-          <TroubleshootingWrapper>
-            <ConnectTroubleshooting onRepair={onRepairModal} />
-          </TroubleshootingWrapper>
-        ) : null}
-      </Footer>
-      <Button
-        onClick={() => {
-          Observable.create(TransportBLE.listen).subscribe(
-            // ({ device, deviceModel, type, descriptor }) => {
-            //   if (device) {
-            //     const deviceId = descriptor || "";
-            //     const stateDevice = {
-            //       deviceId,
-            //       modelId: deviceModel ? deviceModel.id : "nanoS",
-            //       wired: true,
-            //     };
-
-            //     if (type === "add") {
-            //       // devices[deviceId] = true;
-            //       dispatch(addDevice(stateDevice));
-            //     } else if (type === "remove") {
-            //       // delete devices[deviceId];
-            //       dispatch(removeDevice(stateDevice));
-            //     }
-            //   }
-            // },
-            e => {
-              if (e.type === "add") {
-                const descriptor = e.descriptor;
-                const device = {
-                  deviceName: descriptor.name,
-                  deviceId: descriptor.id,
-                  modelId: "nanoX",
-                  wired: false,
-                };
-                dispatch(addDevice(device));
-              }
-            },
-            e => {
-              console.log("Bluetooth error: ", e);
-            },
-            () => {
-              // Completed
-            },
-          );
-        }}
-      >
-        Connect Bluetooth
-      </Button>
-    </Wrapper>
-  );
-};
+      </Title>
+      {!device ? (
+        <TroubleshootingWrapper>
+          <ConnectTroubleshooting onRepair={onRepairModal} />
+        </TroubleshootingWrapper>
+      ) : null}
+    </Footer>
+  </Wrapper>
+);
 
 export const renderFirmwareUpdating = ({
   modelId,

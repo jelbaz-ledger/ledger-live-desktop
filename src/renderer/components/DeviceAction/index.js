@@ -228,7 +228,6 @@ const DeviceAction = <R, H, P>({
       device,
       onRepairModal,
       onRetry,
-      dispatch,
     });
   }
 

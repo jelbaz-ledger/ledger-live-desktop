@@ -16,8 +16,8 @@ const ListenDevices = () => {
             const deviceId = descriptor || "";
             const stateDevice = {
               deviceId,
-              modelId: deviceModel ? deviceModel.id : "nanoS",
-              wired: true,
+              modelId: "nanoX", //deviceModel ? deviceModel.id : device.name || "nanoS",
+              wired: false, //true,
             };
 
             if (type === "add") {
@@ -29,21 +29,25 @@ const ListenDevices = () => {
             }
           }
         },
-        () => {
-          resetDevices();
-          syncDevices();
+        error => {
+          console.log("bluetooth error", error);
+          // resetDevices();
+          // syncDevices();
         },
         () => {
-          resetDevices();
-          syncDevices();
+          console.log("bluetooth complete");
+          // resetDevices();
+          // syncDevices();
         },
       );
     }
 
-    const timeoutSyncDevices = setTimeout(syncDevices, 1000);
+    syncDevices();
+
+    // const timeoutSyncDevices = setTimeout(syncDevices, 1000);
 
     return () => {
-      clearTimeout(timeoutSyncDevices);
+      // clearTimeout(timeoutSyncDevices);
       sub.unsubscribe();
     };
   }, [dispatch]);
