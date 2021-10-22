@@ -8,10 +8,7 @@ const cmd = (): Observable<DescriptorEvent<*>> =>
   Observable.create(Transport.listen).pipe(
     map(data => ({
       ...data,
-      descriptor: {
-        ...data.descriptor,
-        _noble: undefined,
-      },
+      descriptor: JSON.parse(data.descriptor.toString()),
     })),
   );
 

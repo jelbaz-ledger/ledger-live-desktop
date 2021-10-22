@@ -10,6 +10,10 @@ const ListenDevices = () => {
   // HID devices
   useEffect(() => {
     let sub;
+    let subBt;
+
+    resetDevices();
+
     function syncDevices() {
       const devices = {};
       sub = command("listenDevices")().subscribe(
@@ -32,61 +36,50 @@ const ListenDevices = () => {
           }
         },
         () => {
-          resetDevices();
           syncDevices();
         },
         () => {
-          resetDevices();
           syncDevices();
+        },
+      );
+    }
+
+    function syncBtDevices() {
+      const devices = {};
+      subBt = command("listenBluetoothDevices")().subscribe(
+        ({ type, descriptor }) => {
+          const stateDevice = {
+            deviceId: descriptor,
+            modelId: "nanoX", // hacky :(
+            wired: false,
+          };
+
+          if (type === "add") {
+            devices[descriptor.id] = true;
+            dispatch(addDevice(stateDevice));
+          } else if (type === "remove") {
+            delete devices[descriptor.id];
+            dispatch(removeDevice(stateDevice));
+          }
+        },
+        error => {
+          console.log("Bluetooth error.", error);
+          setTimeout(syncBtDevices, 1000);
+        },
+        () => {
+          console.log("Bluetooth end.");
+          setTimeout(syncBtDevices, 1000);
         },
       );
     }
 
     const timeoutSyncDevices = setTimeout(syncDevices, 1000);
+    syncBtDevices();
 
     return () => {
       clearTimeout(timeoutSyncDevices);
       sub.unsubscribe();
-    };
-  }, [dispatch]);
-
-  // Bluetooth devices
-  useEffect(() => {
-    let sub;
-    function syncDevices() {
-      const devices = {};
-      sub = command("listenBluetoothDevices")().subscribe(
-        ({ device, deviceModel, type, descriptor }) => {
-          if (device) {
-            const deviceId = descriptor || "";
-            const stateDevice = {
-              deviceId,
-              modelId: "nanoX", // hacky :(
-              wired: false,
-            };
-
-            if (type === "add") {
-              devices[deviceId] = true;
-              dispatch(addDevice(stateDevice));
-            } else if (type === "remove") {
-              delete devices[deviceId];
-              dispatch(removeDevice(stateDevice));
-            }
-          }
-        },
-        error => {
-          console.log("Bluetooth error.", error);
-        },
-        () => {
-          console.log("Bluetooth end.");
-        },
-      );
-    }
-
-    syncDevices();
-
-    return () => {
-      sub.unsubscribe();
+      subBt.unsubscribe();
     };
   }, [dispatch]);
 

@@ -62,9 +62,9 @@ if (getEnv("DEVICE_PROXY_URL")) {
   registerTransportModule({
     id: "ble",
     open: peripheral => {
-      const bluetoothPeripheral = noble._peripherals[peripheral?.uuid];
+      const bluetoothPeripheral = noble._peripherals[peripheral?.id];
       if (!bluetoothPeripheral) return false;
-      return BluetoothTransport.open(noble._peripherals[peripheral.uuid]);
+      return BluetoothTransport.open(noble._peripherals[peripheral.id]);
     },
     disconnect: id => BluetoothTransport.disconnect(id),
   });
