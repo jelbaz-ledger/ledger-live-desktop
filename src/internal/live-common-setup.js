@@ -10,8 +10,10 @@ import { addAccessHook, setErrorRemapping } from "@ledgerhq/live-common/lib/hw/d
 import { setEnvUnsafe, getEnv } from "@ledgerhq/live-common/lib/env";
 import { retry } from "@ledgerhq/live-common/lib/promise";
 import TransportNodeHidSingleton from "@ledgerhq/hw-transport-node-hid-singleton";
+import BluetoothTransport from "@ledgerhq/hw-transport-node-ble";
 import TransportHttp from "@ledgerhq/hw-transport-http";
 import { DisconnectedDevice } from "@ledgerhq/errors";
+import { log } from "@ledgerhq/logs";
 
 /* eslint-disable guard-for-in */
 for (const k in process.env) {
@@ -47,6 +49,7 @@ setErrorRemapping(e => {
   return throwError(e);
 });
 
+log("INIT");
 if (getEnv("DEVICE_PROXY_URL")) {
   const Tr = TransportHttp(getEnv("DEVICE_PROXY_URL").split("|"));
 
@@ -60,6 +63,14 @@ if (getEnv("DEVICE_PROXY_URL")) {
     id: "hid",
     open: devicePath => retry(() => TransportNodeHidSingleton.open(), { maxRetry: 4 }),
     disconnect: () => Promise.resolve(),
+  });
+  registerTransportModule({
+    id: "ble",
+    open: id => {
+      log("ble transport open()");
+      return BluetoothTransport.open(id);
+    },
+    disconnect: id => BluetoothTransport.disconnect(id),
   });
 }
 

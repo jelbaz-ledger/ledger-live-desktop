@@ -17,6 +17,7 @@ import logger from "~/logger";
 require("@electron/remote/main").initialize();
 
 app.allowRendererProcessReuse = false;
+// app.commandLine.appendSwitch("enable-experimental-web-platform-features");
 
 const gotLock = app.requestSingleInstanceLock();
 const userDataDirectory = resolveUserDataDirectory();

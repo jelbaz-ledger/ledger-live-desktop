@@ -130,5 +130,12 @@ export async function createMainWindow({ dimensions, positions }: any, settings:
     }
   });
 
+  mainWindow.webContents.on("select-bluetooth-device", (event, deviceList, callback) => {
+    event.preventDefault();
+    if (deviceList && deviceList.length > 0) {
+      callback(deviceList[0].deviceId);
+    }
+  });
+
   return mainWindow;
 }
