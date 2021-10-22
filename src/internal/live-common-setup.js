@@ -59,19 +59,21 @@ if (getEnv("DEVICE_PROXY_URL")) {
     disconnect: () => Promise.resolve(),
   });
 } else {
-  // registerTransportModule({
-  //   id: "hid",
-  //   open: devicePath => {
-  //     return retry(() => TransportNodeHidSingleton.open(), { maxRetry: 4 });
-  //   },
-  //   disconnect: () => Promise.resolve(),
-  // });
   registerTransportModule({
     id: "ble",
     open: peripheral => {
+      const bluetoothPeripheral = noble._peripherals[peripheral?.uuid];
+      if (!bluetoothPeripheral) return false;
       return BluetoothTransport.open(noble._peripherals[peripheral.uuid]);
     },
     disconnect: id => BluetoothTransport.disconnect(id),
+  });
+  registerTransportModule({
+    id: "hid",
+    open: devicePath => {
+      return retry(() => TransportNodeHidSingleton.open(), { maxRetry: 4 });
+    },
+    disconnect: () => Promise.resolve(),
   });
 }
 

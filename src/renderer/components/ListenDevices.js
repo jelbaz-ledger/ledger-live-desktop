@@ -6,6 +6,8 @@ import { command } from "~/renderer/commands";
 
 const ListenDevices = () => {
   const dispatch = useDispatch();
+
+  // HID devices
   useEffect(() => {
     let sub;
     function syncDevices() {
@@ -16,8 +18,51 @@ const ListenDevices = () => {
             const deviceId = descriptor || "";
             const stateDevice = {
               deviceId,
-              modelId: "nanoX", //deviceModel ? deviceModel.id : device.name || "nanoS",
-              wired: false, //true,
+              modelId: deviceModel ? deviceModel.id : "nanoS",
+              wired: true,
+            };
+
+            if (type === "add") {
+              devices[deviceId] = true;
+              dispatch(addDevice(stateDevice));
+            } else if (type === "remove") {
+              delete devices[deviceId];
+              dispatch(removeDevice(stateDevice));
+            }
+          }
+        },
+        () => {
+          resetDevices();
+          syncDevices();
+        },
+        () => {
+          resetDevices();
+          syncDevices();
+        },
+      );
+    }
+
+    const timeoutSyncDevices = setTimeout(syncDevices, 1000);
+
+    return () => {
+      clearTimeout(timeoutSyncDevices);
+      sub.unsubscribe();
+    };
+  }, [dispatch]);
+
+  // Bluetooth devices
+  useEffect(() => {
+    let sub;
+    function syncDevices() {
+      const devices = {};
+      sub = command("listenBluetoothDevices")().subscribe(
+        ({ device, deviceModel, type, descriptor }) => {
+          if (device) {
+            const deviceId = descriptor || "";
+            const stateDevice = {
+              deviceId,
+              modelId: "nanoX", // hacky :(
+              wired: false,
             };
 
             if (type === "add") {
@@ -30,24 +75,17 @@ const ListenDevices = () => {
           }
         },
         error => {
-          console.log("bluetooth error", error);
-          // resetDevices();
-          // syncDevices();
+          console.log("Bluetooth error.", error);
         },
         () => {
-          console.log("bluetooth complete");
-          // resetDevices();
-          // syncDevices();
+          console.log("Bluetooth end.");
         },
       );
     }
 
     syncDevices();
 
-    // const timeoutSyncDevices = setTimeout(syncDevices, 1000);
-
     return () => {
-      // clearTimeout(timeoutSyncDevices);
       sub.unsubscribe();
     };
   }, [dispatch]);
